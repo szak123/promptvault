@@ -4,6 +4,7 @@ import { useUser, UserButton } from '@clerk/nextjs'
 import { useState } from 'react'
 import { STARTER_PROMPTS, extractVars, type Category } from '@/lib/prompts'
 import UpgradeModal from '@/components/UpgradeModal'
+import CommunityFeed from '@/components/CommunityFeed'
 
 const CAT_COLORS: Record<Category, { dot: string; label: string }> = {
   analysis: { dot: '#2a6b4a', label: '#2a6b4a' },
@@ -261,25 +262,7 @@ export default function Dashboard() {
         )}
 
         {/* COMMUNITY */}
-        {tab === 'community' && (
-          <div>
-            <div style={{ marginBottom: 24 }}>
-              <h1 style={{ fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 600, marginBottom: 4 }}>Community</h1>
-              <p style={{ fontSize: 12, color: '#8a847a' }}>Submit prompts and vote — 10 upvotes joins the official library</p>
-            </div>
-            <div style={{ background: '#fff', border: '1px solid #d5cfc3', borderRadius: 12, padding: 24, maxWidth: 600 }}>
-              <div style={{ fontFamily: 'Lora, serif', fontSize: 17, fontWeight: 600, marginBottom: 16 }}>How it works</div>
-              <div style={{ background: '#f5f0e8', borderRadius: 8, padding: 14, fontSize: 12, color: '#4a4640', lineHeight: 1.8 }}>
-                <div style={{ marginBottom: 6 }}><strong>1. Submit</strong> — share your prompt with the community</div>
-                <div style={{ marginBottom: 6 }}><strong>2. Community votes</strong> — other users upvote prompts they find useful</div>
-                <div><strong>3. Auto-approved at 10 votes</strong> — joins the official library, you get credited</div>
-              </div>
-              <p style={{ fontSize: 13, color: '#8a847a', fontStyle: 'italic', marginTop: 16 }}>
-                Community submissions and voting coming in the next update!
-              </p>
-            </div>
-          </div>
-        )}
+        {tab === 'community' && <CommunityFeed />}
 
       </main>
 
