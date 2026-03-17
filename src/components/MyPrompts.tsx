@@ -3,9 +3,9 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { extractVars, type Category } from '@/lib/prompts'
+import { extractVars, type Category, CAT_COLORS } from '@/lib/prompts'
 
-const CATEGORIES: Category[] = ['analysis','writing','client','research','strategy','data','email','comms']
+const CATEGORIES: Category[] = ['analysis','writing','client','research','strategy','data','email','comms','finance','marketing','operations','legal','customer']
 
 interface MyPrompt {
   id: string
