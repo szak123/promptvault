@@ -1,10 +1,13 @@
 'use client'
 
 import { useUser, UserButton } from '@clerk/nextjs'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { STARTER_PROMPTS, extractVars, type Category } from '@/lib/prompts'
+import { supabase } from '@/lib/supabase'
 import UpgradeModal from '@/components/UpgradeModal'
 import CommunityFeed from '@/components/CommunityFeed'
+import Favorites from '@/components/Favorites'
+import MyPrompts from '@/components/MyPrompts'
 
 const CAT_COLORS: Record<Category, { dot: string; label: string }> = {
   analysis: { dot: '#2a6b4a', label: '#2a6b4a' },
@@ -19,7 +22,7 @@ const CAT_COLORS: Record<Category, { dot: string; label: string }> = {
 
 const CATEGORIES: Category[] = ['analysis','writing','client','research','strategy','data','email','comms']
 
-type Tab = 'library' | 'runner' | 'improver' | 'community'
+type Tab = 'library' | 'favorites' | 'myprompts' | 'runner' | 'improver' | 'community'
 
 export default function Dashboard() {
   const { user } = useUser()
@@ -35,6 +38,7 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false)
   const [toast, setToast] = useState('')
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([])
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -46,6 +50,30 @@ export default function Dashboard() {
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
     showToast('Copied!')
+  }
+
+  useEffect(() => {
+    if (user) fetchFavorites()
+  }, [user])
+
+  const fetchFavorites = async () => {
+    const { data } = await supabase
+      .from('favorites')
+      .select('prompt_id')
+      .eq('user_id', user!.id)
+    setFavoriteIds(data?.map(f => f.prompt_id) || [])
+  }
+
+  const toggleFavorite = async (promptId: number) => {
+    if (favoriteIds.includes(promptId)) {
+      await supabase.from('favorites').delete().eq('user_id', user!.id).eq('prompt_id', promptId)
+      setFavoriteIds(prev => prev.filter(id => id !== promptId))
+      showToast('Removed from favorites')
+    } else {
+      await supabase.from('favorites').insert({ user_id: user!.id, prompt_id: promptId })
+      setFavoriteIds(prev => [...prev, promptId])
+      showToast('Added to favorites ♥')
+    }
   }
 
   const filtered = STARTER_PROMPTS.filter(p => {
@@ -84,7 +112,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', minHeight: '100vh', fontFamily: 'Outfit, sans-serif' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr', minHeight: '100vh', fontFamily: 'Outfit, sans-serif' }}>
 
       {/* Sidebar */}
       <aside style={{ background: '#ede8de', borderRight: '1px solid #d5cfc3', padding: '20px 0', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
@@ -94,11 +122,34 @@ export default function Dashboard() {
         </div>
 
         <nav style={{ padding: '16px 0', flex: 1 }}>
-          {([['library','▤','Library'],['runner','▷','Run Prompt'],['improver','✦','AI Improver'],['community','◎','Community']] as const).map(([id, icon, label]) => (
+          <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: '#8a847a', padding: '0 16px 6px', fontWeight: 500 }}>Library</div>
+          {([
+            ['library','▤','Prompt Library'],
+            ['favorites','♡','Favorites'],
+            ['myprompts','✏️','My Prompts'],
+          ] as const).map(([id, icon, label]) => (
+            <div key={id} onClick={() => setTab(id)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 16px', fontSize: 12, color: tab === id ? '#c0522a' : '#4a4640', cursor: 'pointer', borderLeft: `2px solid ${tab === id ? '#c0522a' : 'transparent'}`, background: tab === id ? '#f0ddd5' : 'transparent', fontWeight: tab === id ? 500 : 400 }}>
+              <span>{icon}</span>{label}
+              {id === 'favorites' && favoriteIds.length > 0 && (
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: '#c0522a', color: '#fff', padding: '1px 6px', borderRadius: 10 }}>{favoriteIds.length}</span>
+              )}
+            </div>
+          ))}
+
+          <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: '#8a847a', padding: '12px 16px 6px', fontWeight: 500 }}>Tools</div>
+          {([
+            ['runner','▷','Run Prompt'],
+            ['improver','✦','AI Improver'],
+          ] as const).map(([id, icon, label]) => (
             <div key={id} onClick={() => setTab(id)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 16px', fontSize: 12, color: tab === id ? '#c0522a' : '#4a4640', cursor: 'pointer', borderLeft: `2px solid ${tab === id ? '#c0522a' : 'transparent'}`, background: tab === id ? '#f0ddd5' : 'transparent', fontWeight: tab === id ? 500 : 400 }}>
               <span>{icon}</span>{label}
             </div>
           ))}
+
+          <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: '#8a847a', padding: '12px 16px 6px', fontWeight: 500 }}>Community</div>
+          <div onClick={() => setTab('community')} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 16px', fontSize: 12, color: tab === 'community' ? '#c0522a' : '#4a4640', cursor: 'pointer', borderLeft: `2px solid ${tab === 'community' ? '#c0522a' : 'transparent'}`, background: tab === 'community' ? '#f0ddd5' : 'transparent', fontWeight: tab === 'community' ? 500 : 400 }}>
+            <span>◎</span>Community
+          </div>
 
           <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: '#8a847a', padding: '12px 16px 6px', fontWeight: 500 }}>Categories</div>
           {CATEGORIES.map(cat => (
@@ -138,7 +189,7 @@ export default function Dashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 12 }}>
               {filtered.map(p => (
                 <div key={p.id} style={{ background: '#fff', border: '1px solid #d5cfc3', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
-                  
+
                   {/* PRO blur overlay */}
                   {p.isPro && (
                     <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', background: 'rgba(245,240,232,0.7)', borderRadius: 10 }}>
@@ -149,17 +200,20 @@ export default function Dashboard() {
                       </button>
                     </div>
                   )}
-              
-                  {/* Card content */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: CAT_COLORS[p.category].dot }} />
-                    <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.5, textTransform: 'uppercase', color: CAT_COLORS[p.category].label }}>{p.category}</div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: CAT_COLORS[p.category].dot }} />
+                      <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.5, textTransform: 'uppercase', color: CAT_COLORS[p.category].label }}>{p.category}</div>
+                    </div>
+                    <button onClick={() => toggleFavorite(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: favoriteIds.includes(p.id) ? '#c0522a' : '#d5cfc3', padding: 0, lineHeight: 1 }} title={favoriteIds.includes(p.id) ? 'Remove from favorites' : 'Add to favorites'}>
+                      {favoriteIds.includes(p.id) ? '♥' : '♡'}
+                    </button>
                   </div>
+
                   <div style={{ fontFamily: 'Lora, serif', fontSize: 14, fontWeight: 600, color: '#1c1a16', marginBottom: 6, lineHeight: 1.3 }}>{p.title}</div>
-                  
-                  {/* Full prompt text — expandable */}
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#4a4640', lineHeight: 1.75, background: '#f5f0e8', borderRadius: 4, padding: '8px 10px', flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{p.body}</div>
-                  
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                     <div style={{ fontSize: 10, color: '#8a847a' }}>{p.uses} uses</div>
                     <div style={{ display: 'flex', gap: 5 }}>
@@ -172,6 +226,12 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* FAVORITES */}
+        {tab === 'favorites' && <Favorites />}
+
+        {/* MY PROMPTS */}
+        {tab === 'myprompts' && <MyPrompts />}
 
         {/* RUNNER */}
         {tab === 'runner' && (
@@ -268,6 +328,7 @@ export default function Dashboard() {
 
       {/* Upgrade Modal */}
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+
       {/* Toast */}
       {toast && (
         <div style={{ position: 'fixed', bottom: 20, right: 20, background: '#1c1a16', color: '#fff', padding: '9px 16px', borderRadius: 7, fontSize: 12, fontFamily: 'Outfit, sans-serif', zIndex: 200 }}>
