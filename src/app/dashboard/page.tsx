@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [improving, setImproving] = useState(false)
   const [copied, setCopied] = useState(false)
   const [toast, setToast] = useState('')
+  const [showUpgrade, setShowUpgrade] = useState(false)
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -142,7 +143,7 @@ export default function Dashboard() {
                     <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', background: 'rgba(245,240,232,0.7)', borderRadius: 10 }}>
                       <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, background: '#1c1a16', color: '#fff', padding: '4px 10px', borderRadius: 6, marginBottom: 8 }}>PRO</div>
                       <div style={{ fontSize: 12, color: '#4a4640', marginBottom: 12, textAlign: 'center', padding: '0 16px' }}>Upgrade to access this prompt</div>
-                      <button style={{ padding: '6px 16px', background: '#c0522a', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>
+                      <button onClick={() => setShowUpgrade(true)} style={{ padding: '6px 16px', background: '#c0522a', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>
                         Upgrade to Pro — $19/mo
                       </button>
                     </div>
@@ -282,6 +283,8 @@ export default function Dashboard() {
 
       </main>
 
+      {/* Upgrade Modal */}
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
       {/* Toast */}
       {toast && (
         <div style={{ position: 'fixed', bottom: 20, right: 20, background: '#1c1a16', color: '#fff', padding: '9px 16px', borderRadius: 7, fontSize: 12, fontFamily: 'Outfit, sans-serif', zIndex: 200 }}>
