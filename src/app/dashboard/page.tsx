@@ -2,23 +2,12 @@
 
 import { useUser, UserButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
-import { STARTER_PROMPTS, extractVars, type Category } from '@/lib/prompts'
+import { STARTER_PROMPTS, extractVars, type Category, CAT_COLORS } from '@/lib/prompts'
 import { supabase } from '@/lib/supabase'
 import UpgradeModal from '@/components/UpgradeModal'
 import CommunityFeed from '@/components/CommunityFeed'
 import Favorites from '@/components/Favorites'
 import MyPrompts from '@/components/MyPrompts'
-
-const CAT_COLORS: Record<Category, { dot: string; label: string }> = {
-  analysis: { dot: '#2a6b4a', label: '#2a6b4a' },
-  writing:  { dot: '#2a4a8a', label: '#2a4a8a' },
-  client:   { dot: '#c0522a', label: '#c0522a' },
-  research: { dot: '#8a6020', label: '#8a6020' },
-  strategy: { dot: '#2a6a8a', label: '#2a6a8a' },
-  data:     { dot: '#6a2a6a', label: '#6a2a6a' },
-  email:    { dot: '#5a2a8a', label: '#5a2a8a' },
-  comms:    { dot: '#2a5a3a', label: '#2a5a3a' },
-}
 
 const CATEGORIES: Category[] = ['analysis','writing','client','research','strategy','data','email','comms']
 
@@ -38,6 +27,7 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false)
   const [toast, setToast] = useState('')
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [activePack, setActivePack] = useState<'all' | 'analyst' | 'smallbiz'>('all')
   const [favoriteIds, setFavoriteIds] = useState<number[]>([])
 
   const showToast = (msg: string) => {
@@ -77,9 +67,10 @@ export default function Dashboard() {
   }
 
   const filtered = STARTER_PROMPTS.filter(p => {
+    const matchPack = activePack === 'all' || p.pack === activePack
     const matchCat = activeCat === 'all' || p.category === activeCat
     const matchQ = !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.body.toLowerCase().includes(search.toLowerCase())
-    return matchCat && matchQ
+    return matchPack && matchCat && matchQ
   })
 
   const selected = STARTER_PROMPTS.find(p => p.id === selectedId) || STARTER_PROMPTS[0]
@@ -175,8 +166,19 @@ export default function Dashboard() {
         {tab === 'library' && (
           <div>
             <div style={{ marginBottom: 24 }}>
-              <h1 style={{ fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 600, marginBottom: 4 }}>Prompt Library</h1>
-              <p style={{ fontSize: 12, color: '#8a847a' }}>32 curated prompts for consulting &amp; analytical work</p>
+              <h1 style={{ fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 600, marginBottom: 12 }}>Prompt Library</h1>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+                <button onClick={() => setActivePack('all')} style={{ padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, border: 'none', background: activePack === 'all' ? '#1c1a16' : '#e4dfd3', color: activePack === 'all' ? '#fff' : '#4a4640', cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>
+                  All prompts
+                </button>
+                <button onClick={() => setActivePack('analyst')} style={{ padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, border: 'none', background: activePack === 'analyst' ? '#c0522a' : '#e4dfd3', color: activePack === 'analyst' ? '#fff' : '#4a4640', cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>
+                  ▤ Analysts & Consultants
+                </button>
+                <button onClick={() => setActivePack('smallbiz')} style={{ padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, border: 'none', background: activePack === 'smallbiz' ? '#2d7a2d' : '#e4dfd3', color: activePack === 'smallbiz' ? '#fff' : '#4a4640', cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>
+                  🏪 Small Business
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: '#8a847a' }}>{filtered.length} prompts</p>
             </div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search prompts..." style={{ flex: 1, minWidth: 160, padding: '7px 12px', background: '#fff', border: '1px solid #d5cfc3', borderRadius: 7, fontFamily: 'Outfit, sans-serif', fontSize: 12, color: '#1c1a16', outline: 'none' }} />
