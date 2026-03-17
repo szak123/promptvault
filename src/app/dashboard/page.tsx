@@ -3,6 +3,7 @@
 import { useUser, UserButton } from '@clerk/nextjs'
 import { useState } from 'react'
 import { STARTER_PROMPTS, extractVars, type Category } from '@/lib/prompts'
+import UpgradeModal from '@/components/UpgradeModal'
 
 const CAT_COLORS: Record<Category, { dot: string; label: string }> = {
   analysis: { dot: '#2a6b4a', label: '#2a6b4a' },
