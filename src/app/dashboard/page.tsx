@@ -134,14 +134,29 @@ export default function Dashboard() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 12 }}>
               {filtered.map(p => (
-                <div key={p.id} style={{ background: '#fff', border: '1px solid #d5cfc3', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                  {p.isPro && <div style={{ position: 'absolute', top: 10, right: 10, fontSize: 9, fontWeight: 600, letterSpacing: 1, background: '#1c1a16', color: '#fff', padding: '2px 6px', borderRadius: 4 }}>PRO</div>}
+                <div key={p.id} style={{ background: '#fff', border: '1px solid #d5cfc3', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+                  
+                  {/* PRO blur overlay */}
+                  {p.isPro && (
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', background: 'rgba(245,240,232,0.7)', borderRadius: 10 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, background: '#1c1a16', color: '#fff', padding: '4px 10px', borderRadius: 6, marginBottom: 8 }}>PRO</div>
+                      <div style={{ fontSize: 12, color: '#4a4640', marginBottom: 12, textAlign: 'center', padding: '0 16px' }}>Upgrade to access this prompt</div>
+                      <button style={{ padding: '6px 16px', background: '#c0522a', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Outfit, sans-serif' }}>
+                        Upgrade to Pro — $19/mo
+                      </button>
+                    </div>
+                  )}
+              
+                  {/* Card content */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: CAT_COLORS[p.category].dot }} />
                     <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.5, textTransform: 'uppercase', color: CAT_COLORS[p.category].label }}>{p.category}</div>
                   </div>
                   <div style={{ fontFamily: 'Lora, serif', fontSize: 14, fontWeight: 600, color: '#1c1a16', marginBottom: 6, lineHeight: 1.3 }}>{p.title}</div>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#8a847a', lineHeight: 1.65, background: '#f5f0e8', borderRadius: 4, padding: '7px 8px', flex: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const }}>{p.body}</div>
+                  
+                  {/* Full prompt text — expandable */}
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#4a4640', lineHeight: 1.75, background: '#f5f0e8', borderRadius: 4, padding: '8px 10px', flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{p.body}</div>
+                  
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                     <div style={{ fontSize: 10, color: '#8a847a' }}>{p.uses} uses</div>
                     <div style={{ display: 'flex', gap: 5 }}>
