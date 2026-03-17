@@ -7,17 +7,6 @@ import { extractVars, type Category } from '@/lib/prompts'
 
 const CATEGORIES: Category[] = ['analysis','writing','client','research','strategy','data','email','comms']
 
-const CAT_COLORS: Record<Category, { dot: string; label: string }> = {
-  analysis: { dot: '#2a6b4a', label: '#2a6b4a' },
-  writing:  { dot: '#2a4a8a', label: '#2a4a8a' },
-  client:   { dot: '#c0522a', label: '#c0522a' },
-  research: { dot: '#8a6020', label: '#8a6020' },
-  strategy: { dot: '#2a6a8a', label: '#2a6a8a' },
-  data:     { dot: '#6a2a6a', label: '#6a2a6a' },
-  email:    { dot: '#5a2a8a', label: '#5a2a8a' },
-  comms:    { dot: '#2a5a3a', label: '#2a5a3a' },
-}
-
 interface MyPrompt {
   id: string
   title: string
