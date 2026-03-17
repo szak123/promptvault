@@ -45,6 +45,6 @@ export const STARTER_PROMPTS: Prompt[] = [
 ]
 
 export function extractVars(body: string): string[] {
-  const matches = [...body.matchAll(/\[([^\]]+)\]/g)]
-  return [...new Set(matches.map(m => m[1]))]
+  const matches = Array.from(body.matchAll(/\[([^\]]+)\]/g))
+  return Array.from(new Set(matches.map(m => m[1])))
 }
